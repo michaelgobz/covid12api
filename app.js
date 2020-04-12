@@ -1,12 +1,13 @@
 const express = require('express')
 const fs = require('fs');
-const xml = require('xml');
+const js2xmlparser = require('js2xmlparser');
 const morgan = require('morgan')
 const path = require('path')
-const port = process.env.PORT || 7000;
-const app = express()
 const covid19ImpactEstimator = require('./estimator');
 const bodyParser = require('body-parser');
+
+const port = process.env.PORT;
+const app = express();
 
 // create a write stream (in append mode)
 var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
@@ -63,7 +64,7 @@ app.post('/api/v1/on-covid-19', (req, res, next) => {
 });
 
 app.post('/api/v1/on-covid-19/json', (req, res, next) => {
-    res.set('headers', 'application/json');
+    res.set('content-Type', 'application/json');
     post_data.region.name = req.body.region.name;
     post_data.region.avgAge = req.body.region.avgAge;
     post_data.region.avgDailyIncomeInUSD = req.body.region.avgDailyIncomeInUSD;
@@ -78,7 +79,7 @@ app.post('/api/v1/on-covid-19/json', (req, res, next) => {
 });
 
 app.post('/api/v1/on-covid-19/xml', (req, res, next) => {
-    res.set('headers', 'application/xml');
+    res.set('Content-Type', 'application/xml');
     post_data.region.name = req.body.region.name;
     post_data.region.avgAge = req.body.region.avgAge;
     post_data.region.avgDailyIncomeInUSD = req.body.region.avgDailyIncomeInUSD;
@@ -88,8 +89,8 @@ app.post('/api/v1/on-covid-19/xml', (req, res, next) => {
     post_data.reportedCases = req.body.reportedCases;
     post_data.population = req.body.population;
     post_data.totalHospitalBeds = req.body.totalHospitalBeds;
-    console.log(post_data);
-    res.send(xml(covid19ImpactEstimator(post_data)));
+    console.log(js2xmlparser.parse('postData',post_data));
+    res.send(js2xmlparser.parse('response', covid19ImpactEstimator(post_data)));
 });
 app.get('/api/v1/on-covid19/logs', (req, res, next) => {
     res.set('Content-Type', 'text/data');
