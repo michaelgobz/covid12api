@@ -35,32 +35,43 @@ const logger = morgan(function (tokens, req, res) {
         tokens.url(req, res),
         tokens.status(req, res),
         tokens['response-time'](req, res),'ms'
-    ].join('\t')
+    ].join('\t\t')
 },
  { stream: accessLogStream, })
 app.use(logger)
 
-app.get('/', (req, res) => {
+app.get('/', (req, res, next) => {
     res.send('welcome to Covid-19 API')
 });
-app.get('/api/v1/on-covid-19', (req, res) => {
-    res.json(
-     covid19ImpactEstimator(data)
-    )
+
+const post_data = { region: {} };
+
+app.post('/api/v1/on-covid-19', (req, res, next) => {
+    post_data.region.name = req.body.region.name;
+    post_data.region.avgAge = req.body.region.avgAge;
+    post_data.region.avgDailyIncomeInUSD = req.body.region.avgDailyIncomeInUSD ;
+    post_data.region.avgDailyIncomePopulation = req.body.region.avgDailyIncomePopulation;
+    post_data.periodType = req.body.periodType;
+    post_data.timeToElapse = req.body.timeToElapse;
+    post_data.reportedCases = req.body.reportedCases;
+    post_data.population = req.body.population;
+    post_data.totalHospitalBeds = req.body.totalHospitalBeds;
+    console.log(post_data);
+    res.json(covid19ImpactEstimator(post_data))
 });
 
-app.post('/api/v1/on-covid-19', (req, res) => {
-    res.status(201).json(req.body);
-});
-
-app.get('/api/v1/on-covid-19/json', (req, res) => {
+app.get('/api/v1/on-covid-19/json', (req, res, next) => {
     res.json(
-        covid19ImpactEstimator(data)
+        covid19ImpactEstimator(post_data)
     );
 });
-app.get('/api/v1/on-covid-19/xml', (req, res) => {
-    res.set('Content-Type', 'text/xml');
-    res.status(200).send(xml(data));
+app.get('/api/v1/on-covid-19/xml', (req, res ,next) => {
+    res.set('headers', 'application/xml');
+    res.status(200).send(xml(covid19ImpactEstimator(post_data)));
+});
+app.get('/api/v1/on-covid19/logs', (req, res ,next ) => {
+    res.set('Content-Type', 'text/data');
+    res.sendFile(path.join(__dirname, 'access.log'));
 })
 //server listening
 app.listen(port, () => {

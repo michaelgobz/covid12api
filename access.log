@@ -1,0 +1,4 @@
+GET		/api/v1/on-covid-19/json		200		3.278		ms
+GET		/api/v1/on-covid-19/xml		200		1.584		ms
+POST		/api/v1/on-covid-19		200		3.838		ms
+GET		/api/v1/on-covid19/logs		200		4.002		ms
