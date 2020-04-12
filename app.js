@@ -53,7 +53,7 @@ app.post('/api/v1/on-covid-19', (req, res) => {
     res.status(201).json(req.body);
 });
 
-app.post('/api/v1/on-covid-19/json', (req, res) => {
+app.get('/api/v1/on-covid-19/json', (req, res) => {
     res.json(
         covid19ImpactEstimator(data)
     );
