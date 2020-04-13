@@ -92,7 +92,7 @@ app.post('/api/v1/on-covid-19/xml', (req, res) => {
     console.log(js2xmlparser.parse('postData',post_data));
     res.send(js2xmlparser.parse('response', covid19ImpactEstimator(post_data)));
 });
-app.get('/api/v1/on-covid19/logs', (req, res) => {
+app.get('/api/v1/on-covid-19/logs', (req, res) => {
     res.set('Content-Type', 'text/data');
     res.sendFile(path.join(__dirname, 'access.log'))
 })
