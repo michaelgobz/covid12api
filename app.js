@@ -6,7 +6,7 @@ const path = require('path')
 const covid19ImpactEstimator = require('./estimator');
 const bodyParser = require('body-parser');
 
-const port = process.env.PORT;
+const port = process.env.PORT || 7000;
 const app = express();
 
 // create a write stream (in append mode)
@@ -37,19 +37,19 @@ const logger = morgan(function (tokens, req, res) {
         tokens.method(req, res),
         tokens.url(req, res),
         tokens.status(req, res),
-        tokens['response-time'](req, res),'ms'
+        Math.trunc(tokens['response-time'](req, res)), 'ms'
     ].join('\t\t')
 },
  { stream: accessLogStream, })
 app.use(logger)
 
-//app.get('/', (req, res, next) => {
-    //res.send('welcome to Covid-19 API')
-//});
+app.get('/', (req, res) => {
+    res.send('welcome to Covid-19 API')
+});
 
 const post_data = { region: {}, };
 
-app.post('/api/v1/on-covid-19', (req, res, next) => {
+app.post('/api/v1/on-covid-19', (req, res) => {
     post_data.region.name = req.body.region.name;
     post_data.region.avgAge = req.body.region.avgAge;
     post_data.region.avgDailyIncomeInUSD = req.body.region.avgDailyIncomeInUSD ;
@@ -63,7 +63,7 @@ app.post('/api/v1/on-covid-19', (req, res, next) => {
     res.json(covid19ImpactEstimator(post_data))
 });
 
-app.post('/api/v1/on-covid-19/json', (req, res, next) => {
+app.post('/api/v1/on-covid-19/json', (req, res) => {
     res.set('content-Type', 'application/json');
     post_data.region.name = req.body.region.name;
     post_data.region.avgAge = req.body.region.avgAge;
@@ -78,7 +78,7 @@ app.post('/api/v1/on-covid-19/json', (req, res, next) => {
     res.json(covid19ImpactEstimator(post_data))
 });
 
-app.post('/api/v1/on-covid-19/xml', (req, res, next) => {
+app.post('/api/v1/on-covid-19/xml', (req, res) => {
     res.set('Content-Type', 'application/xml');
     post_data.region.name = req.body.region.name;
     post_data.region.avgAge = req.body.region.avgAge;
@@ -92,9 +92,9 @@ app.post('/api/v1/on-covid-19/xml', (req, res, next) => {
     console.log(js2xmlparser.parse('postData',post_data));
     res.send(js2xmlparser.parse('response', covid19ImpactEstimator(post_data)));
 });
-app.get('/api/v1/on-covid19/logs', (req, res, next) => {
+app.get('/api/v1/on-covid19/logs', (req, res) => {
     res.set('Content-Type', 'text/data');
-    res.sendFile(path.join(__dirname , 'access.log'))
+    res.sendFile(path.join(__dirname, 'access.log'))
 })
 //server listening
 app.listen(port, () => {
