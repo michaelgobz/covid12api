@@ -10,7 +10,7 @@ const port = process.env.PORT || 7000;
 const app = express();
 
 // create a write stream (in append mode)
-var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a' })
+var accessLogStream = fs.createWriteStream(path.join(__dirname, 'access.log'), { flags: 'a', encoding: 'utf-8' })
 // data
 const data = {
     region: {
@@ -32,15 +32,25 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // setup the logger
-const logger = morgan(function (tokens, req, res) {
-    return [
-        tokens.method(req, res),
-        tokens.url(req, res),
-        tokens.status(req, res),
-        Math.trunc(tokens['response-time'](req, res)), 'ms'
-    ].join('\t\t')
-},
- { stream: accessLogStream, })
+const msgformat = ':method\t:url\t:status\t:response-time';
+const logger = morgan(msgformat,
+    {
+        stream: {
+            write(msg) {
+                const finalUrl = msg.length - 1;
+                const tabindex = msg.lastIndexOf('\t');
+                const str = msg.substring(tabindex + 1, finalUrl);
+                let timemodel = Math.ceil(parseInt(str));
+                if (timemodel < 10) {
+                    timemodel = `0${timemodel.toString()}`
+                } else {
+                   timemodel= timemodel.toString();
+                }
+                const log = `${msg.substring(0, tabindex + 1)}${timemodel}ms\n`;
+                accessLogStream.write(log); 
+            }
+        }
+    })
 app.use(logger)
 
 app.get('/', (req, res) => {
